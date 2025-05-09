@@ -19,7 +19,7 @@ const generateTokens = async (userId) => {
 };
 
 const registerUser = async (req, res) => {
-  const { email, username, password } = req.body;
+  const { email, username, password, role } = req.body;
 
   if (!email || !username || !password) {
     return res.status(400).json({
@@ -47,7 +47,7 @@ const registerUser = async (req, res) => {
         email,
         password: hashedPassword,
         username,
-        role: UserRole.USER,
+        role: role || UserRole.USER,
         isVerified: false,
       },
     });
@@ -168,7 +168,7 @@ const loginUser = async (req, res) => {
           role: user.role,
           image: user.image,
           isVerified: user.isVerified,
-          refreshToken: user.refreshToken,
+          refreshToken: refreshToken || User.refreshToken,
         },
       });
   } catch (error) {
@@ -194,7 +194,7 @@ const logoutUser = async (req, res) => {
       .status(200)
       .json({
         success: true,
-        message: "Logged out successfully",
+        message: "Logged out successfully"
       });
   } catch (error) {
     console.error("Logout error:", error);

@@ -236,7 +236,7 @@ export const updateProblem = async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Problem updated successfully",
-      problem: newProblem,
+      problem: updateProblem,
     });
   } catch (error) {
     console.error("Create problem error:", error);
@@ -248,7 +248,38 @@ export const updateProblem = async (req, res) => {
 };
 
 export const deleteProblem = async (req, res) => {
-  res.send("delete problem");
+  const { id } = req.params;
+
+  try {
+    const problem = await db.problem.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!problem) {
+      return res.status(404).json({
+        error: "Problem not found",
+      });
+    }
+
+    await db.problem.delete({
+      where: {
+        id,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Problem deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Error while deleting problem",
+    });
+  }
 };
 
 export const getAllProblemaSolvedByUser = async (req, res) => {

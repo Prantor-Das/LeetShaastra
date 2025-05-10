@@ -1,4 +1,8 @@
 import axios from "axios";
+import dotenv from 'dotenv';
+dotenv.config();
+
+const JUDGE0_API_KEY = process.env.JUDGE0_API_KEY ?? "";
 
 export const getJudge0LanguageId = (language) => {
   const languageMap = {
@@ -10,12 +14,19 @@ export const getJudge0LanguageId = (language) => {
 };
 
 export const submitBatch = async (submissions) => {
-  const { data } = await axios.post(
-    `${process.env.JUDGE0_API_URL}/submissions/batch?base64_encoded=false`,
-    {
-      submissions,
-    }
-  );
+  const options = {
+    method: "POST",
+    url: process.env.JUDGE0_API_URL + "/submissions/batch",
+    params: { base64_encoded: "false" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${JUDGE0_API_KEY}`,  // ✅ fixed
+    },
+    data: { submissions }, // ✅ fixed location of submissions payload
+  };
+
+  const { data } = await axios.request(options);
 
   console.log("Submission Batch", data);
 
@@ -26,15 +37,21 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const pollBatchResults = async (tokens) => {
   while (true) {
-    const { data } = await axios.get(
-      `${process.env.JUDGE0_API_URL}/submissions/batch`,
-      {
-        params: {
-          tokens: tokens.join(","),
-          base64_encoded: false,
-        },
-      }
-    );
+    const options = {
+      method: "GET",
+      url: process.env.JUDGE0_API_URL + "/submissions/batch",
+      params: {
+        tokens: tokens.join(","),
+        base64_encoded: false,
+      },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${JUDGE0_API_KEY}`, // ✅ fixed
+      },
+    };
+
+    const { data } = await axios.request(options);
 
     const results = data.submissions;
 

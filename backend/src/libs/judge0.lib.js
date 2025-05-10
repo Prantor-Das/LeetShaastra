@@ -21,9 +21,9 @@ export const submitBatch = async (submissions) => {
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${JUDGE0_API_KEY}`,  // ✅ fixed
+      Authorization: `Bearer ${JUDGE0_API_KEY}`,  
     },
-    data: { submissions }, // ✅ fixed location of submissions payload
+    data: { submissions },
   };
 
   const { data } = await axios.request(options);
@@ -47,7 +47,7 @@ export const pollBatchResults = async (tokens) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${JUDGE0_API_KEY}`, // ✅ fixed
+        Authorization: `Bearer ${JUDGE0_API_KEY}`,
       },
     };
 

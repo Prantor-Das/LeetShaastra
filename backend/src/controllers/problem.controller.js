@@ -273,6 +273,7 @@ export const deleteProblem = async (req, res) => {
       success: true,
       message: "Problem deleted successfully",
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -283,5 +284,5 @@ export const deleteProblem = async (req, res) => {
 };
 
 export const getAllProblemaSolvedByUser = async (req, res) => {
-  res.send("get all problem solved by user");
+  
 };

@@ -1,5 +1,5 @@
 import { db } from "../libs/db.js";
-import { pollBatchResults } from "../libs/judge0.lib.js";
+import { getJudge0LanguageId, pollBatchResults, submitBatch } from "../libs/judge0.lib.js";
 
 export const createProblem = async (req, res) => {
   // going to get all the data from the request body
@@ -17,11 +17,11 @@ export const createProblem = async (req, res) => {
     referenceSolutions,
   } = req.body;
   // going to check user role once again
-  if (req.user !== "ADMIN") {
-    return res.status(403).json({
-      error: "You are not authorized to create a problem",
-    });
-  }
+//   if (req.user !== "ADMIN") {
+//     return res.status(403).json({
+//       error: "You are not authorized to create a problem",
+//     });
+//   }
   // loop through each reference solution for differnt problem
   try {
     for (const [language, solutionCode] of Object.entries(referenceSolutions)) {

@@ -9,8 +9,19 @@ export const getJudge0LanguageId = (language) => {
     PYTHON: 71,
     JAVA: 62,
     JAVASCRIPT: 63,
+    TYPESCRIPT: 74,
   };
   return languageMap[language.toUpperCase()];
+};
+
+export const getLanguageName = (languageId) => {
+  const languageMap = {
+    71: "PYTHON",
+    62: "JAVA",
+    63: "JAVASCRIPT",
+    74: "TYPESCRIPT",
+  };
+  return languageMap[languageId] ?? "UNKNOWN";
 };
 
 export const submitBatch = async (submissions) => {

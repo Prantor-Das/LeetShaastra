@@ -166,6 +166,7 @@ exports.Prisma.SubmissionScalarFieldEnum = {
   stdin: 'stdin',
   stdout: 'stdout',
   stderr: 'stderr',
+  compileOutput: 'compileOutput',
   status: 'status',
   memory: 'memory',
   time: 'time',
@@ -230,6 +231,11 @@ exports.Difficulty = exports.$Enums.Difficulty = {
   EASY: 'EASY',
   MEDIUM: 'MEDIUM',
   HARD: 'HARD'
+};
+
+exports.Status = exports.$Enums.Status = {
+  ACCEPTED: 'ACCEPTED',
+  WRONG_ANSWER: 'WRONG_ANSWER'
 };
 
 exports.Prisma.ModelName = {

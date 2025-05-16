@@ -1,10 +1,29 @@
 import { db } from "../libs/db.js";
-// add feature to change name and etc
 
 export const createPlaylist = async (req, res) => {
   try {
     const { name, description } = req.body;
     const userId = req.user.id;
+
+    // add more validation like already existing playlist
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        error: "Playlist name is required",
+      });
+    }
+
+    const existingPlaylist = await db.playlist.findFirst({
+      where: {
+        name,
+        userId,
+      },
+    });
+
+    if (existingPlaylist) {
+      return res.status(400).json({
+        error: "A playlist with this name already exists",
+      });
+    }
 
     const playlist = await db.playlist.create({
       data: {
@@ -13,8 +32,6 @@ export const createPlaylist = async (req, res) => {
         userId,
       },
     });
-
-    // add more validation like already existing playlist
 
     res.status(200).json({
       success: true,
@@ -29,13 +46,78 @@ export const createPlaylist = async (req, res) => {
   }
 };
 
+export const updatePlaylist = async (req, res) => {
+  try {
+    const { playListId } = req.params; // playlist ID from URL
+    const { name, description } = req.body;
+    const userId = req.user.id;
+
+    // Fetch the playlist to ensure it belongs to the user
+    const existingPlaylist = await db.Playlist.findUnique({
+      where: {
+        id: playListId,
+      },
+    });
+
+    if (!existingPlaylist) {
+      return res.status(404).json({
+        error: "Playlist not found",
+      });
+    }
+
+    if (existingPlaylist.userId !== userId) {
+      return res.status(403).json({
+        error: "You are not authorized to update this playlist",
+      });
+    }
+
+    // Prevent changing to an already existing name
+    if (name) {
+      const duplicate = await db.playlist.findFirst({
+        where: {
+          userId,
+          name,
+          NOT: {
+            id: playListId,
+          },
+        },
+      });
+
+      if (duplicate) {
+        return res.status(400).json({
+          error: "Another playlist with the same name already exists",
+        });
+      }
+    }
+
+    const updatedPlaylist = await db.playlist.update({
+      where: { id: playListId },
+      data: {
+        name,
+        description,
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Playlist updated successfully",
+      playlist: updatedPlaylist,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to update playlist",
+    });
+  }
+};
+
 export const getAllListDetails = async (req, res) => {
   try {
     const playlists = await db.playlist.findMany({
       where: {
         userId: req.user.id,
       },
-      includes: {
+      include: {
         problems: {
           include: {
             problem: true,
@@ -96,43 +178,83 @@ export const getPlayListDetails = async (req, res) => {
 
 export const addProblemToPlaylist = async (req, res) => {
   const { playlistId } = req.params;
-  const { problemIds } = req.body; // [id1, id2, id3]
-  // add feature to add multiple problems to playlist
+  const { problemIds } = req.body; // expected: [id1, id2, id3]
+
+  // Validate input
+  if (!Array.isArray(problemIds) || problemIds.length === 0) {
+    return res.status(400).json({
+      error: "Invalid or missing problemIds",
+    });
+  }
 
   try {
-    // check if problem already exists in playlist
+    // Fetch existing problemIds already in the playlist
+    const existingEntries = await db.ProblemInPlaylist.findMany({
+      where: {
+        playListId: playlistId,
+        problemId: { in: problemIds },
+      },
+      select: { problemId: true },
+    });
 
-    if (!Array.isArray(problemIds) ?? problemIds.length === 0) {
-      return res.status(400).json({
-        error: "Invalid or missing problemId",
+    const existingProblemIds = new Set(existingEntries.map((e) => e.problemId));
+
+    // Filter out problemIds already in the playlist
+    const newProblemIds = problemIds.filter(
+      (id) => !existingProblemIds.has(id)
+    );
+
+    if (newProblemIds.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "All problems already exist in the playlist",
       });
     }
 
-    // Create records for each problems in the playlist
-    const problemsInPlaylist = await db.problemsInPlaylist.createMany({
-      data: problemIds.map((problemId) => ({
-        playlistId,
+    // Add new problems to the playlist
+    const problemsInPlaylist = await db.ProblemInPlaylist.createMany({
+      data: newProblemIds.map((problemId) => ({
+        playListId: playlistId,
         problemId,
       })),
     });
 
     res.status(201).json({
       success: true,
-      message: "Problem added to playlist successfully",
-      problemsInPlaylist,
+      message: "Problems added to playlist successfully",
+      addedCount: problemsInPlaylist.count,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error adding problems to playlist:", error);
     res.status(500).json({
-      error: "Failed to add problem to playlist",
+      error: "Failed to add problems to playlist",
     });
   }
 };
 
 export const deletePlaylist = async (req, res) => {
-  const { playlistId } = req.params;
-
   try {
+    const { playlistId } = req.params;
+    const userId = req.user.id;
+
+    // Check if the playlist exists and belongs to the user
+    const playlist = await db.playlist.findUnique({
+      where: { id: playlistId },
+    });
+
+    if (!playlist) {
+      return res.status(404).json({
+        error: "Playlist not found",
+      });
+    }
+
+    if (playlist.userId !== userId) {
+      return res.status(403).json({
+        error: "You are not authorized to delete this playlist",
+      });
+    }
+
+    // Proceed with deletion
     const deletedPlaylist = await db.playlist.delete({
       where: {
         id: playlistId,
@@ -163,9 +285,9 @@ export const removeProblemFromPlaylist = async (req, res) => {
       });
     }
 
-    const deletedProblem = await db.problemsInPlaylist.deleteMany({
+    const deletedProblem = await db.ProblemInPlaylist.deleteMany({
       where: {
-        playlistId,
+        playListId: playlistId,
         problemId: {
           in: problemIds,
         },

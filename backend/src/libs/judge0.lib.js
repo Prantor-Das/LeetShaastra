@@ -46,7 +46,12 @@ export const submitBatch = async (submissions) => {
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Hybrid pooling - first 4 sec smart response then reduces pressure on API using smarter delay
 export const pollBatchResults = async (tokens) => {
+  let elapsed = 0;
+  let interval = 1000; // Start with 1s
+  let maxInterval = 8000; // Max wait time after exponential backoff
+
   while (true) {
     const options = {
       method: "GET",
@@ -58,12 +63,11 @@ export const pollBatchResults = async (tokens) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${JUDGE0_API_KEY}`,
+        Authorization: `Bearer ${process.env.JUDGE0_API_KEY}`,
       },
     };
 
     const { data } = await axios.request(options);
-
     const results = data.submissions;
 
     const isAllDone = results.every(
@@ -74,6 +78,13 @@ export const pollBatchResults = async (tokens) => {
       return results;
     }
 
-    await sleep(1000);
+    await sleep(interval);
+
+    elapsed += interval;
+
+    // After 4 seconds, switch to exponential backoff (2s, 4s, 8s...)
+    if (elapsed >= 4000) {
+      interval = Math.min(interval * 2, maxInterval);
+    }
   }
 };

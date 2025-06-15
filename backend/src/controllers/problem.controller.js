@@ -20,6 +20,8 @@ export const createProblem = async (req, res) => {
   } = req.body;
 
   // loop through each reference solution for differnt problem
+  // Object.entries(referenceSolutions) is an array of [language, solutionCode]
+  // Object.entries is a method that returns an array of [key, value]
   try {
     for (const [language, solutionCode] of Object.entries(referenceSolutions)) {
       const languageId = getJudge0LanguageId(language);

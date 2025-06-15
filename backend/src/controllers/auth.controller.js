@@ -9,10 +9,10 @@ import { UserRole } from "../../generated/prisma/index.js";
 // Helper function to generate tokens
 const generateTokens = async (userId) => {
   const accessToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: "1d",
+    expiresIn: "15m",
   });
   const refreshToken = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "1d",
   });
   
   return { accessToken, refreshToken };
@@ -157,8 +157,8 @@ const loginUser = async (req, res) => {
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, { ...options, maxAge: 24 * 60 * 60 * 1000 })
-      .cookie("refreshToken", refreshToken, { ...options, maxAge: 7 * 24 * 60 * 60 * 1000 })
+      .cookie("accessToken", accessToken, { ...options, maxAge: 15 * 60 * 1000 })
+      .cookie("refreshToken", refreshToken, { ...options, maxAge: 1 * 24 * 60 * 60 * 1000 })
       .json({
         success: true,
         user: {

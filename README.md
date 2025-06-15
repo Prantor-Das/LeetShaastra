@@ -91,7 +91,7 @@ App should now be live at `http://localhost:8080`
 
 ## 📸 Preview
 
-> ![LeetShaastra Logo](assets/Logo.png)  
+> ![LeetShaastra Logo](assets/Logo.jpg)  
 > *"Solve DSA, Build Skills."*
 
 ---

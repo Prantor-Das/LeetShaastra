@@ -85,8 +85,6 @@ cd frontend
 npm run dev
 ```
 
-App should now be live at `http://localhost:8080`
-
 ---
 
 ## 📸 Preview
@@ -95,21 +93,6 @@ App should now be live at `http://localhost:8080`
 > *"Solve DSA, Build Skills."*
 
 ---
-
-## 🚧 Folder Structure
-
-```
-LeetShaastra/
-├── frontend/         # React Frontend
-│   └── assets/
-│   └── src/
-├── backend/  
-│   ├── prisma/ 
-│   └── src/
-│   ├── .env/ 
-│   └── nodemodule/
-└── README.md
-```
 
 ## 📜 License
 
